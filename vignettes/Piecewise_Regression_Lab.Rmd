@@ -1,0 +1,168 @@
+---
+title: "Piecewise Regression Lab"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Piecewise_Regression_Lab}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Golden Segment Searching and Optimization
+
+
+## Examples
+
+## The Functions
+
+### `findMyKnot()`
+```{r}
+findMyKnot <- function(xlist, ylist, data, doPlot = TRUE){
+
+  ######################## Set Up ##########################
+
+  x_vals <- data[ , xlist] #List of x values
+  y_vals <- data[ , ylist] #List of y values
+  min_x <- min(x_vals) #Max and min of the x values, useful later
+  max_x <- max(x_vals)
+
+  ######################## Sub-Funcitons ##########################
+
+  findRsq <- function(x_k){ #Function for Purrr map
+    Rsq <- vector(mode = "numeric", length = length(x_k))
+
+    #For loop to return vector of Rsq values if a vector of values
+    #is passed in, as in the curve function
+    for(i in 1:length(x_k)){
+      x <- (x_vals > x_k[i])*(x_vals - x_k[i])
+      ylm <- lm(as.vector(y_vals) ~ as.vector(x_vals) + as.vector(x))
+      Rsq[i] = (summary(ylm))$r.squared
+    }
+    return(Rsq)
+  }
+
+  findAIC <- function(x_k){ #Function for Purrr map
+    AICs <- vector(mode = "numeric", length = length(x_k))
+
+    #For loop to return vector of Rsq values if a vector of values
+    #is passed in, as in the curve function
+    for(i in 1:length(x_k)){
+      x <- (x_vals > x_k[i])*(x_vals - x_k[i])
+      ylm <- lm(as.vector(y_vals) ~ as.vector(x_vals) + as.vector(x))
+      AICs[i] = AIC(ylm)
+    }
+    return(AICs)
+  }
+
+  ######################## Calculations ##########################
+
+  Rsq <- map_dbl(x_vals, findRsq) #using purrr, yay!!
+  AICs <- map_dbl(x_vals, findAIC)
+
+  max_dr <- x_vals[which.max(Rsq)] #Best Rsquared is the maximum
+  min_da <- x_vals[which.min(AICs)] #Best AIC Value is the minimum value
+
+  c <- 3 * sqrt(max_x - min_x) #used for optimze around an interval of the discrete case
+  max_cr <- optimize(findRsq, interval = c(max_dr - c, max_dr + c), maximum = TRUE)
+  min_ca <- optimize(findAIC, interval = c(min_da - c, min_da + c), maximum = FALSE)
+
+
+  ######################## PLOTTING ##########################
+
+  if(doPlot){ #only plot when asked (will plot by default)
+    par(mfrow = c(2,1), mar = c(4,5,2,2))
+
+    plot(x_vals, Rsq,
+         xlab = expression(x[k]), ylab = expression(R^2),
+         col = "black", pch = 20, lwd = 2.5)
+    abline(v = max_dr, col = "red", lwd = 0.5)
+
+    curve(findRsq, add = TRUE, lwd = 1.4, col = "black", n = 555) #n was arbitrary chosen
+    abline(v = max_cr$maximum, col = "blue", lwd = 1)
+
+    #---------------------------------------------------#
+
+    plot(x_vals, AICs,
+         xlab = expression(x[k]), ylab = expression(AIC),
+         col = "black", pch = 20, lwd = 2.5)
+    abline(v = min_da, col = "red", lwd = 0.5)
+
+    curve(findAIC, add = TRUE, lwd = 1.4, col = "black", n = 555) #n was arbitrary chosen
+    abline(v = min_ca$minimum, col = "blue", lwd = 1)
+  }
+
+  ######################## RETURN ##########################
+
+  my_list <- list(x_krd = max_dr, x_krc = max_cr$maximum,
+                  x_kad = min_da, x_kac = min_ca$minimum,
+                  Rsqs = Rsq, AICs = AICs)
+  return(invisible(my_list))
+}
+```
+
+
+### `pieceReg()`
+```{r}
+pieceReg <- function(xlist, ylist, data, type = "rd"){
+
+  ######################## Set Up ##########################
+
+  results <- findMyKnot(xlist, ylist, data, doPlot = FALSE)
+
+  x_vals <- data[ , xlist] #List of x values
+  y_vals <- data[ , ylist] #List of y values
+
+  #Switch determines which knot to make model from
+  x_k <- switch(type,
+
+                rd = results$x_krd, #default case
+
+                rc = results$x_krc,
+
+                ad = results$x_kad,
+
+                ac = results$x_kac
+
+                )
+
+  ######################## Sub-Functions ##########################
+
+  ## Calculation of new model with 1 knot
+  newmodel <- function(xk){
+    X <- (x_vals - xk)*(x_vals > xk) #Second line for piecewise function based on knot
+    df = within(data, X)
+    newlm <- lm(as.vector(y_vals) ~ as.vector(x_vals) + as.vector(X))
+    return(newlm)
+  }
+
+  ## Piecewise Model for graphing and calculations
+  model <- function(xval, xk = x_k, beta = newbeta){
+    beta[1] + beta[2] * xval + ((xval > xk) * beta[3] * (xval - xk))
+  }
+
+  ######################## Calculations ##########################
+
+  pilm <- newmodel(x_k) #Find New model
+  newbeta <- unname(coef(pilm)) #Coefficients of model
+
+  x_rsq <- (summary(pilm))$r.squared
+  x_aic <- AIC(pilm)
+
+  y_k = model(x_k, x_k, newbeta) #find position of knot
+
+  ######################## Plotting ##########################
+
+  par(mfrow = c(1,1))
+
+  plot(x_vals, y_vals, xlab = xlist, ylab = ylist,
+       col = "black", pch = 20, lwd = 2)
+  curve(model, add = TRUE, n = 1000, col = "red", lwd = 2.25)
+  points(x_k, y_k, col = "blue", pch = 19, lwd = 2, cex = 1.25)
+
+
+  ######################## Return ##########################
+
+  my_list <- list(cord = c(x_k, y_k), r.squared = x_rsq, AIC =  x_aic)
+  return(invisible(my_list))
+}
+```
+

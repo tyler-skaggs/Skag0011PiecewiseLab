@@ -1,0 +1,18 @@
+Package: PiecwiseSkag0011
+Type: Package
+Title: Piecwise Regression
+Version: 0.1.0
+Author: Tyler Skaggs
+Maintainer: Tyler Skaggs <tyler.j.skaggs-1@ou.edu>
+Description: This Package, created for a lab in MATH 5773, will conduct a 
+    piecewise regression analysis for a data set.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Depends: 
+    R (>= 2.10), purrr
+RoxygenNote: 7.2.1
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
