@@ -53,10 +53,10 @@ findMyKnot <- function(xlist, ylist, data, doPlot = TRUE){
 
   ######################## Set Up ##########################
 
-  x_vals <- data[ , xlist] #List of x values
-  y_vals <- data[ , ylist] #List of y values
-  min_x <- min(x_vals) #Max and min of the x values, useful later
-  max_x <- max(x_vals)
+  x_vals <- (as.vector(data[ , xlist]))[[1]] #List of x values
+  y_vals <- (as.vector(data[ , ylist]))[[1]] #List of y values
+  min_x <- x_vals[which.min(x_vals)] #Max and min of the x values, useful later
+  max_x <- x_vals[which.max(x_vals)]
 
   ######################## Sub-Funcitons ##########################
 

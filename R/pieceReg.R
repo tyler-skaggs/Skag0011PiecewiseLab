@@ -45,8 +45,8 @@ pieceReg <- function(xlist, ylist, data, type = "rd"){
 
   results <- findMyKnot(xlist, ylist, data, doPlot = FALSE)
 
-  x_vals <- data[ , xlist] #List of x values
-  y_vals <- data[ , ylist] #List of y values
+  x_vals <- (as.vector(data[ , xlist]))[[1]] #List of x values
+  y_vals <- (as.vector(data[ , ylist]))[[1]] #List of y values
 
   #Switch determines which knot to make model from
   x_k <- switch(type,

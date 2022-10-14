@@ -11,6 +11,25 @@ vignette: >
 
 
 ## Examples
+```{r}
+library(purrr)
+v <- Intro2MLR::myreadxl("C:/Users/tyler/Documents/Grad School/MATH 5773/Data/Excel/")
+t <-findMyKnot("LENGTH", "WEIGHT", data = v$DDT)
+t
+```
+
+Using this function, we write the second function `pieceReg()`. Here is an example of it:
+```{r}
+pieceReg("LENGTH", "WEIGHT", v$DDT)
+```
+
+Both of these functions are written general to any data set. That is, if we wanted to test
+some other data set for a 2-piece piecewise regression, it is as simple as the following:
+```{r}
+t <- pieceReg("BHDiameter", "Height", v$SPRUCE, type = "rc")
+t
+```
+
 
 ## The Functions
 
@@ -20,10 +39,10 @@ findMyKnot <- function(xlist, ylist, data, doPlot = TRUE){
 
   ######################## Set Up ##########################
 
-  x_vals <- data[ , xlist] #List of x values
-  y_vals <- data[ , ylist] #List of y values
-  min_x <- min(x_vals) #Max and min of the x values, useful later
-  max_x <- max(x_vals)
+  x_vals <- (as.vector(data[ , xlist]))[[1]] #List of x values
+  y_vals <- (as.vector(data[ , ylist]))[[1]] #List of y values
+  min_x <- x_vals[which.min(x_vals)] #Max and min of the x values, useful later
+  max_x <- x_vals[which.max(x_vals)]
 
   ######################## Sub-Funcitons ##########################
 
@@ -108,8 +127,8 @@ pieceReg <- function(xlist, ylist, data, type = "rd"){
 
   results <- findMyKnot(xlist, ylist, data, doPlot = FALSE)
 
-  x_vals <- data[ , xlist] #List of x values
-  y_vals <- data[ , ylist] #List of y values
+  x_vals <- (as.vector(data[ , xlist]))[[1]] #List of x values
+  y_vals <- (as.vector(data[ , ylist]))[[1]] #List of y values
 
   #Switch determines which knot to make model from
   x_k <- switch(type,
