@@ -10,7 +10,7 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Depends: 
-    R (>= 2.10), purrr
+    R (>= 2.10), purrr, Intro2MLR
 RoxygenNote: 7.2.1
 Suggests: 
     knitr,

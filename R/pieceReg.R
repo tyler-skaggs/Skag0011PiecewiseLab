@@ -10,17 +10,18 @@
 #'
 #' @importFrom graphics curve par points
 #' @importFrom stats AIC coef lm
+#' @importFrom Intro2MLR myreadxl
 #'
-#' @description This function utilizes \code{findMyKnot} for the main calculation
+#' @description This function utilizes \code{findKnot} for the main calculation
 #'    of potential \eqn{x_k} values. From the provided data, we will create a piecewise
 #'    linear model to estimate the trend of the data and variables passed in. Using this
 #'    model we calculate the \eqn{y} coordinate of the model and take measures of the
 #'    model: \eqn{R^2} and AIC.
 #'
-#' @details This function utilizes the \code{findMyKnot} function in this package
+#' @details This function utilizes the \code{findKnot} function in this package
 #'    to do the calculations (not the plotting) of the "best" knot (type selected by the user), the
 #'    values are returned back and selected based on a switch statement. (read more
-#'    about \link[PiecwiseSkag0011]{findMyKnot}). When drawing the piecewise equation
+#'    about \link[PiecwiseSkag0011]{findKnot}). When drawing the piecewise equation
 #'    on the plot we utilize \code{curve} and pass in a sub-function of our model.
 #'
 #' @return This function makes a plot of the data (\eqn{x} vs \eqn{y}) and plots
@@ -43,10 +44,10 @@ pieceReg <- function(xlist, ylist, data, type = "rd"){
 
   ######################## Set Up ##########################
 
-  results <- findMyKnot(xlist, ylist, data, doPlot = FALSE)
+  results <- findKnot(xlist, ylist, data, doPlot = FALSE)
 
-  x_vals <- (as.vector(data[ , xlist]))[[1]] #List of x values
-  y_vals <- (as.vector(data[ , ylist]))[[1]] #List of y values
+  x_vals <- (as.vector(data[ , xlist])) #List of x values
+  y_vals <- (as.vector(data[ , ylist])) #List of y values
 
   #Switch determines which knot to make model from
   x_k <- switch(type,

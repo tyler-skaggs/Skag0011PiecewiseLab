@@ -1,5 +1,5 @@
 ---
-title: "Piecewise Regression Lab"
+title: "Piecewise_Regression_Lab"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Piecewise_Regression_Lab}
@@ -7,35 +7,19 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-## Golden Segment Searching and Optimization
-
-
-## Examples
-```{r}
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(Intro2MLR)
 library(purrr)
-v <- Intro2MLR::myreadxl("C:/Users/tyler/Documents/Grad School/MATH 5773/Data/Excel/")
-t <-findMyKnot("LENGTH", "WEIGHT", data = v$DDT)
-t
 ```
 
-Using this function, we write the second function `pieceReg()`. Here is an example of it:
-```{r}
-pieceReg("LENGTH", "WEIGHT", v$DDT)
-```
-
-Both of these functions are written general to any data set. That is, if we wanted to test
-some other data set for a 2-piece piecewise regression, it is as simple as the following:
-```{r}
-t <- pieceReg("BHDiameter", "Height", v$SPRUCE, type = "rc")
-t
-```
-
+## Golden Segment Searching and Optimization
 
 ## The Functions
 
-### `findMyKnot()`
+### `findKnot()`
 ```{r}
-findMyKnot <- function(xlist, ylist, data, doPlot = TRUE){
+findKnot <- function(xlist, ylist, data, doPlot = TRUE){
 
   ######################## Set Up ##########################
 
@@ -80,7 +64,7 @@ findMyKnot <- function(xlist, ylist, data, doPlot = TRUE){
   max_dr <- x_vals[which.max(Rsq)] #Best Rsquared is the maximum
   min_da <- x_vals[which.min(AICs)] #Best AIC Value is the minimum value
 
-  c <- 3 * sqrt(max_x - min_x) #used for optimze around an interval of the discrete case
+  c <- 3 * sqrt(max_x - min_x) #used for optimize around an interval of the discrete case
   max_cr <- optimize(findRsq, interval = c(max_dr - c, max_dr + c), maximum = TRUE)
   min_ca <- optimize(findAIC, interval = c(min_da - c, min_da + c), maximum = FALSE)
 
@@ -125,7 +109,7 @@ pieceReg <- function(xlist, ylist, data, type = "rd"){
 
   ######################## Set Up ##########################
 
-  results <- findMyKnot(xlist, ylist, data, doPlot = FALSE)
+  results <- findKnot(xlist, ylist, data, doPlot = FALSE)
 
   x_vals <- (as.vector(data[ , xlist]))[[1]] #List of x values
   y_vals <- (as.vector(data[ , ylist]))[[1]] #List of y values
@@ -184,4 +168,27 @@ pieceReg <- function(xlist, ylist, data, type = "rd"){
   return(invisible(my_list))
 }
 ```
+
+
+## Examples
+```{r}
+library(Intro2MLR)
+library(purrr)
+v <- Intro2MLR::myreadxl("C:/Users/tyler/Documents/Grad School/MATH 5773/Data/Excel/")
+t <- findKnot("LENGTH", "WEIGHT", data = v$DDT)
+t
+```
+
+Using this function, we write the second function `pieceReg()`. Here is an example of it:
+```{r}
+pieceReg("LENGTH", "WEIGHT", v$DDT)
+```
+
+Both of these functions are written general to any data set. That is, if we wanted to test
+some other data set for a 2-piece piecewise regression, it is as simple as the following:
+```{r}
+t <- pieceReg("BHDiameter", "Height", v$SPRUCE, type = "rc")
+```
+
+
 
