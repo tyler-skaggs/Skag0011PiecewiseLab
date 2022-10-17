@@ -107,7 +107,7 @@ if(doPlot){ #only plot when asked (will plot by default)
   plot(x_vals, Rsq,
        xlab = expression(x[k]), ylab = expression(R^2),
        col = "black", pch = 20, lwd = 2.5)
-  abline(v = max_dr, col = "red", lwd = 0.5)
+  abline(v = max_dr, col = "red", lwd = 1)
 
   curve(findRsq, add = TRUE, lwd = 1.4, col = "black", n = 555) #n was arbitrary chosen
   abline(v = max_cr$maximum, col = "blue", lwd = 1)
@@ -117,7 +117,7 @@ if(doPlot){ #only plot when asked (will plot by default)
   plot(x_vals, AICs,
        xlab = expression(x[k]), ylab = expression(AIC),
        col = "black", pch = 20, lwd = 2.5)
-  abline(v = min_da, col = "red", lwd = 0.5)
+  abline(v = min_da, col = "red", lwd = 1)
 
   curve(findAIC, add = TRUE, lwd = 1.4, col = "black", n = 555) #n was arbitrary chosen
   abline(v = min_ca$minimum, col = "blue", lwd = 1)
