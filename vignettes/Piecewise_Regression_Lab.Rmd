@@ -16,90 +16,97 @@ library(purrr)
 
 ## Golden Segment Searching and Optimization
 
+
+
 ## The Functions
 
 ### `findKnot()`
 ```{r}
 findKnot <- function(xlist, ylist, data, doPlot = TRUE){
 
-  ######################## Set Up ##########################
+######################## Set Up ##########################
+data <- data.frame(data)
 
-  x_vals <- (as.vector(data[ , xlist]))[[1]] #List of x values
-  y_vals <- (as.vector(data[ , ylist]))[[1]] #List of y values
-  min_x <- x_vals[which.min(x_vals)] #Max and min of the x values, useful later
-  max_x <- x_vals[which.max(x_vals)]
+x_vals <- (as.vector(data[ , xlist])) #List of x values
+y_vals <- (as.vector(data[ , ylist])) #List of y values
+  #Reading this in was weird as sometimes as.vector(data[ , ylist]) would be a
+  #vector and other times it would be a list of a vector. This way was more consistent
 
-  ######################## Sub-Funcitons ##########################
 
-  findRsq <- function(x_k){ #Function for Purrr map
-    Rsq <- vector(mode = "numeric", length = length(x_k))
+min_x <- x_vals[which.min(x_vals)] #Max and min of the x values, useful later
+max_x <- x_vals[which.max(x_vals)]
 
-    #For loop to return vector of Rsq values if a vector of values
-    #is passed in, as in the curve function
-    for(i in 1:length(x_k)){
-      x <- (x_vals > x_k[i])*(x_vals - x_k[i])
-      ylm <- lm(as.vector(y_vals) ~ as.vector(x_vals) + as.vector(x))
-      Rsq[i] = (summary(ylm))$r.squared
-    }
-    return(Rsq)
+######################## Sub-Funcitons ##########################
+
+findRsq <- function(x_k){ #Function for Purrr map
+  Rsq <- vector(mode = "numeric", length = length(x_k))
+
+  #For loop to return vector of Rsq values if a vector of values
+  #is passed in, as in the curve function
+  for(i in 1:length(x_k)){
+    x <- (x_vals > x_k[i])*(x_vals - x_k[i])
+    ylm <- lm(as.vector(y_vals) ~ as.vector(x_vals) + as.vector(x))
+    Rsq[i] = (summary(ylm))$r.squared
   }
+  return(Rsq)
+}
 
-  findAIC <- function(x_k){ #Function for Purrr map
-    AICs <- vector(mode = "numeric", length = length(x_k))
+findAIC <- function(x_k){ #Function for Purrr map
+  AICs <- vector(mode = "numeric", length = length(x_k))
 
-    #For loop to return vector of Rsq values if a vector of values
-    #is passed in, as in the curve function
-    for(i in 1:length(x_k)){
-      x <- (x_vals > x_k[i])*(x_vals - x_k[i])
-      ylm <- lm(as.vector(y_vals) ~ as.vector(x_vals) + as.vector(x))
-      AICs[i] = AIC(ylm)
-    }
-    return(AICs)
+  #For loop to return vector of Rsq values if a vector of values
+  #is passed in, as in the curve function
+  for(i in 1:length(x_k)){
+    x <- (x_vals > x_k[i])*(x_vals - x_k[i])
+    ylm <- lm(as.vector(y_vals) ~ as.vector(x_vals) + as.vector(x))
+    AICs[i] = AIC(ylm)
   }
+  return(AICs)
+}
 
-  ######################## Calculations ##########################
+######################## Calculations ##########################
 
-  Rsq <- map_dbl(x_vals, findRsq) #using purrr, yay!!
-  AICs <- map_dbl(x_vals, findAIC)
+Rsq <- map_dbl(x_vals, findRsq) #using purrr, yay!!
+AICs <- map_dbl(x_vals, findAIC)
 
-  max_dr <- x_vals[which.max(Rsq)] #Best Rsquared is the maximum
-  min_da <- x_vals[which.min(AICs)] #Best AIC Value is the minimum value
+max_dr <- x_vals[which.max(Rsq)] #Best Rsquared is the maximum
+min_da <- x_vals[which.min(AICs)] #Best AIC Value is the minimum value
 
-  c <- 3 * sqrt(max_x - min_x) #used for optimize around an interval of the discrete case
-  max_cr <- optimize(findRsq, interval = c(max_dr - c, max_dr + c), maximum = TRUE)
-  min_ca <- optimize(findAIC, interval = c(min_da - c, min_da + c), maximum = FALSE)
+c <- 3 * sqrt(max_x - min_x) #used for optimize around an interval of the discrete case
+max_cr <- optimize(findRsq, interval = c(max_dr - c, max_dr + c), maximum = TRUE)
+min_ca <- optimize(findAIC, interval = c(min_da - c, min_da + c), maximum = FALSE)
 
 
-  ######################## PLOTTING ##########################
+######################## PLOTTING ##########################
 
-  if(doPlot){ #only plot when asked (will plot by default)
-    par(mfrow = c(2,1), mar = c(4,5,2,2))
+if(doPlot){ #only plot when asked (will plot by default)
+  par(mfrow = c(2,1), mar = c(4,5,2,2))
 
-    plot(x_vals, Rsq,
-         xlab = expression(x[k]), ylab = expression(R^2),
-         col = "black", pch = 20, lwd = 2.5)
-    abline(v = max_dr, col = "red", lwd = 0.5)
+  plot(x_vals, Rsq,
+       xlab = expression(x[k]), ylab = expression(R^2),
+       col = "black", pch = 20, lwd = 2.5)
+  abline(v = max_dr, col = "red", lwd = 1)
 
-    curve(findRsq, add = TRUE, lwd = 1.4, col = "black", n = 555) #n was arbitrary chosen
-    abline(v = max_cr$maximum, col = "blue", lwd = 1)
+  curve(findRsq, add = TRUE, lwd = 1.4, col = "black", n = 555) #n was arbitrary chosen
+  abline(v = max_cr$maximum, col = "blue", lwd = 1)
 
-    #---------------------------------------------------#
+  #---------------------------------------------------#
 
-    plot(x_vals, AICs,
-         xlab = expression(x[k]), ylab = expression(AIC),
-         col = "black", pch = 20, lwd = 2.5)
-    abline(v = min_da, col = "red", lwd = 0.5)
+  plot(x_vals, AICs,
+       xlab = expression(x[k]), ylab = expression(AIC),
+       col = "black", pch = 20, lwd = 2.5)
+  abline(v = min_da, col = "red", lwd = 1)
 
-    curve(findAIC, add = TRUE, lwd = 1.4, col = "black", n = 555) #n was arbitrary chosen
-    abline(v = min_ca$minimum, col = "blue", lwd = 1)
-  }
+  curve(findAIC, add = TRUE, lwd = 1.4, col = "black", n = 555) #n was arbitrary chosen
+  abline(v = min_ca$minimum, col = "blue", lwd = 1)
+}
 
-  ######################## RETURN ##########################
+######################## RETURN ##########################
 
-  my_list <- list(x_krd = max_dr, x_krc = max_cr$maximum,
-                  x_kad = min_da, x_kac = min_ca$minimum,
-                  Rsqs = Rsq, AICs = AICs)
-  return(invisible(my_list))
+my_list <- list(x_krd = max_dr, x_krc = max_cr$maximum,
+                x_kad = min_da, x_kac = min_ca$minimum,
+                Rsqs = Rsq, AICs = AICs)
+return(invisible(my_list))
 }
 ```
 
@@ -110,10 +117,12 @@ pieceReg <- function(xlist, ylist, data, type = "rd"){
 
   ######################## Set Up ##########################
 
+  data <- data.frame(data)
+
   results <- findKnot(xlist, ylist, data, doPlot = FALSE)
 
-  x_vals <- (as.vector(data[ , xlist]))[[1]] #List of x values
-  y_vals <- (as.vector(data[ , ylist]))[[1]] #List of y values
+  x_vals <- (as.vector(data[ , xlist])) #List of x values
+  y_vals <- (as.vector(data[ , ylist])) #List of y values
 
   #Switch determines which knot to make model from
   x_k <- switch(type,
@@ -160,7 +169,7 @@ pieceReg <- function(xlist, ylist, data, type = "rd"){
   plot(x_vals, y_vals, xlab = xlist, ylab = ylist,
        col = "black", pch = 20, lwd = 2)
   curve(model, add = TRUE, n = 1000, col = "red", lwd = 2.25)
-  points(x_k, y_k, col = "blue", pch = 19, lwd = 2, cex = 1.25)
+  points(x_k, y_k, col = "blue", pch = 4, lwd = 2, cex = 1.25)
 
 
   ######################## Return ##########################
@@ -180,13 +189,15 @@ t
 
 Using this function, we write the second function `pieceReg()`. Here is an example of it:
 ```{r, out.width="100%", fig.width=8, fig.height = 6, fig.align='center'}
-pieceReg("LENGTH", "WEIGHT", v$DDT)
+t <- pieceReg("LENGTH", "WEIGHT", v$DDT)
+t
 ```
 
 Both of these functions are written general to any data set. That is, if we wanted to test
 some other data set for a 2-piece piecewise regression, it is as simple as the following:
 ```{r, out.width="100%", fig.width=8, fig.height = 6, fig.align='center'}
 t <- pieceReg("BHDiameter", "Height", v$SPRUCE, type = "rc")
+t
 ```
 
 

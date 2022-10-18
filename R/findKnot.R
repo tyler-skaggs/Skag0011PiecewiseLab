@@ -51,9 +51,13 @@
 findKnot <- function(xlist, ylist, data, doPlot = TRUE){
 
 ######################## Set Up ##########################
+data <- data.frame(data)
 
 x_vals <- (as.vector(data[ , xlist])) #List of x values
 y_vals <- (as.vector(data[ , ylist])) #List of y values
+  #Reading this in was weird as sometimes as.vector(data[ , ylist]) would be a
+  #vector and other times it would be a list of a vector. This way was more consistent
+
 
 min_x <- x_vals[which.min(x_vals)] #Max and min of the x values, useful later
 max_x <- x_vals[which.max(x_vals)]

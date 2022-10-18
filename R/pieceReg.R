@@ -44,6 +44,8 @@ pieceReg <- function(xlist, ylist, data, type = "rd"){
 
   ######################## Set Up ##########################
 
+  data <- data.frame(data)
+
   results <- findKnot(xlist, ylist, data, doPlot = FALSE)
 
   x_vals <- (as.vector(data[ , xlist])) #List of x values
@@ -94,7 +96,7 @@ pieceReg <- function(xlist, ylist, data, type = "rd"){
   plot(x_vals, y_vals, xlab = xlist, ylab = ylist,
        col = "black", pch = 20, lwd = 2)
   curve(model, add = TRUE, n = 1000, col = "red", lwd = 2.25)
-  points(x_k, y_k, col = "blue", pch = 19, lwd = 2, cex = 1.25)
+  points(x_k, y_k, col = "blue", pch = 4, lwd = 2, cex = 1.25)
 
 
   ######################## Return ##########################
