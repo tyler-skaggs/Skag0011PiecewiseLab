@@ -16,7 +16,11 @@ library(purrr)
 
 ## Golden Segment Searching and Optimization
 
+The Golden Segment Search (or Golden Section Search) is a method of finding a minimum or maximum of a function by repeatedly refining the search interval upon each iteration. If we were to search for a minimum of the function $f$ (this can be easily rephrased for a maximum) we first start with selecting some interval $[x_1, x_3]$ and select some value $x_2$ where $f(x_2)$ is a suspected minimum. in this interval such that if $x_2 - x_1 = a$ and $x_3 - x_2 = b$, then $\frac{b}{a+b} = \frac{a}{b}$. Then we then select a fourth point $x_4$ so that $x_3 - x_4 = a$. Then, we look at $f(x_4)$. If $f(x_4) < f(x_2)$, then $x_4$ is a new minimum and we redefine the interval as $[x_2, x_3]$. If $f(x_4) > f(x_2)$, then $x_2$ is a new minimum and we redefine the interval as $[x_1, x_4]$. We then repeat this process on our new interval. We can end this searching by reaching a sufficient error, which is just the distance of the interval being sufficiently small.
 
+The name of this searching is called the golden segment search, which gets its name from the golden ratio found in the searching process. In this search we have the ratio of lengths being $\frac{b}{a} = \frac{a}{a+b}$ and to repeat this search we need the next iteration to have the same ratio. That is $\frac{a - b}{b} = \frac{b}{a}$. From here we get:
+$$ \frac{a}{b} - 1 = \frac{b}{a} \rightarrow \left(\frac{a}{b}\right)^2 - \frac{a}{b} = 1$$
+Of which the only positive value that satisfies this equation is the golden ratio.
 
 ## The Functions
 
